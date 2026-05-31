@@ -1,0 +1,6 @@
+"tetris": {
+  "path": "tetris",
+  "module": "tetris",
+  "function": "run_tetris",
+  "description": "Tetris"
+}
