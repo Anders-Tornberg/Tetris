@@ -10,6 +10,16 @@ Styrning:
 
 import pygame
 import random
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'py-desktop'))
+try:
+    from status_bar import draw_status_bar, status_bar_quit_clicked, STATUS_H
+    _HAS_SB = True
+except ImportError:
+    _HAS_SB = False
+    STATUS_H = 30
 
 HOME_EVENT = pygame.USEREVENT + 102
 
@@ -58,7 +68,6 @@ COLS       = 10
 ROWS       = 20
 CELL       = 38          # pixlar per cell
 FPS        = 60
-STATUS_H   = 30
 
 SWIPE_THRESHOLD = 40
 SWIPE_DEAD_ZONE = 12
@@ -207,13 +216,13 @@ def _draw_next(surface, next_piece, panel_x, panel_y, label_font, cell_size=22):
 
 
 def _draw_status(surface, screen_w, score, level, lines):
-    pygame.draw.rect(surface, PANEL_COLOR, (0, 0, screen_w, STATUS_H))
-    pygame.draw.line(surface, BTN_OUTLINE, (0, STATUS_H - 1), (screen_w, STATUS_H - 1), 1)
-    f = pygame.font.SysFont(None, 22)
-    title = f.render("TETRIS", True, LEVEL_COLOR)
-    surface.blit(title, (10, 7))
-    sc = f.render(f"Poäng: {score}", True, SCORE_COLOR)
-    surface.blit(sc, (screen_w // 2 - sc.get_width() // 2, 7))
+    if _HAS_SB:
+        draw_status_bar(surface, screen_w, app_name="Tetris")
+    else:
+        pygame.draw.rect(surface, PANEL_COLOR, (0, 0, screen_w, STATUS_H))
+        f = pygame.font.SysFont(None, 22)
+        title = f.render("TETRIS", True, LEVEL_COLOR)
+        surface.blit(title, (10, 7))
 
 
 def _draw_quit(surface, screen_w):
@@ -371,7 +380,7 @@ def run_tetris(surface, screen_w, screen_h):
 
             elif ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 1:
                 pos = ev.pos
-                if quit_rect and quit_rect.collidepoint(pos):
+                if _HAS_SB and status_bar_quit_clicked(pos):
                     running = False
                 elif game_over:
                     btn = pygame.Rect(screen_w // 2 - 110, screen_h // 2 + 20, 220, 54)
@@ -455,7 +464,6 @@ def run_tetris(surface, screen_w, screen_h):
         # ------------------------------------------------------------------ #
         surface.fill(BG_COLOR)
         _draw_status(surface, screen_w, score, level, lines)
-        quit_rect = _draw_quit(surface, screen_w)
 
         _draw_board(surface, board, offset_x, offset_y)
 
